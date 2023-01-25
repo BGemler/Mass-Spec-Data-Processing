@@ -1,11 +1,8 @@
 import pandas as pd
 import csv
+from utils import check_fldr_read_sampleid
 
-with open("SAMPLE_ID.txt", "r") as f:
-	for row in f:
-		sample_id = row.replace("\n","")
-		break
-f.close()
+sample_id = check_fldr_read_sampleid()
 
 volcano_data_csv = "input_files/" + sample_id + "_volcano.csv"
 part1_csv_loc = "output_files/" + sample_id + "-transposed_p1.csv"

@@ -1,12 +1,9 @@
 import pandas as pd
 import numpy as np
 import statistics
+from utils import check_fldr_read_sampleid
 
-with open("SAMPLE_ID.txt", "r") as f:
-	for row in f:
-		sample_id = row.replace("\n","")
-		break
-f.close()
+sample_id = check_fldr_read_sampleid()
 
 og_compound_loc = "input_files/" + sample_id + ".xlsx"
 part1_xls_loc = "output_files/" + sample_id + "_p1.xlsx"
