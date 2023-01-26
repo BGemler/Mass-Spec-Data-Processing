@@ -14,7 +14,6 @@ def check_fldr_read_sampleid():
 	fldrs_to_check = ["input_files/", "output_files/"]
 	for fldr in fldrs_to_check:
 		if os.path.isdir(fldr) == False:
-			command = "mkdir " + fldr
-			process = subprocess.run(command.split(), stdout=subprocess.PIPE)
+			os.makedirs(fldr)
 
 	return sample_id
