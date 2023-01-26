@@ -170,7 +170,7 @@ worksheet.conditional_format('G1:I' + str(len(compound_assign_df)),
 xls_writer.save()
 
 # make a DF to cut down to desired columns
-csv_desired_cols = [step2_desired_columns[0]] + bio_cols 
+csv_desired_cols = [step2_desired_columns[0]] + bio_cols + qc_cols
 transpose_assignment = {}
 for key in csv_desired_cols:
 	transpose_assignment[key] = []
