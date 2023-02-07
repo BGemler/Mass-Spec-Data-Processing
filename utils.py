@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 
 def check_fldr_read_sampleid():
