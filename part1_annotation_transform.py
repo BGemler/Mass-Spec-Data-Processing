@@ -130,6 +130,7 @@ for index, row in QC_CV_df.iterrows():
 
 # parse thru signals, identify duplicates, and if there are any only keep top bio average
 indexes_to_keep = []
+indexes_that_are_standards = []
 for name in signal_array:
 	data_rows = signal_array[name]
 
@@ -139,6 +140,8 @@ for name in signal_array:
 			max_bio_avg = bio_avg
 
 	for index, bio_avg in data_rows:
+		if name.startswith("["):
+			indexes_that_are_standards.append(index)
 		if bio_avg == max_bio_avg:
 			indexes_to_keep.append(index)
 			break
@@ -151,6 +154,8 @@ for key in step2_desired_columns:
 # Collect and write out compound assignmnet data passing restrictions
 for index, row in QC_CV_df.iterrows():
 	if index not in indexes_to_keep:
+		continue
+	if index in indexes_that_are_standards:
 		continue
 
 	for key in step2_desired_columns:
@@ -167,6 +172,31 @@ worksheet.conditional_format('G1:I' + str(len(compound_assign_df)),
 																'value': 'Full match',
 																'format': format1})
 
+# init standards dataframe
+standards_assignment = {}
+for key in step2_desired_columns:
+	standards_assignment[key] = []
+
+# Collect and write out compound assignmnet data passing restrictions
+for index, row in QC_CV_df.iterrows():
+	if index not in indexes_to_keep:
+		continue
+	if index not in indexes_that_are_standards:
+		continue
+
+	for key in step2_desired_columns:
+		standards_assignment[key].append(row[key])
+
+standards_assign_df = pd.DataFrame(data = standards_assignment)
+standards_assign_df.to_excel(xls_writer, sheet_name="Standards", index = False)
+
+# add conditional formatting to QC CV sheet
+worksheet = xls_writer.sheets['Standards']
+worksheet.conditional_format('G1:I' + str(len(compound_assign_df)),
+															{'type': 'text', 
+																'criteria': 'containing', 
+																'value': 'Full match',
+																'format': format1})
 xls_writer.save()
 
 # make a DF to cut down to desired columns
@@ -176,6 +206,8 @@ for key in csv_desired_cols:
 	transpose_assignment[key] = []
 
 for index, row in compound_assign_df.iterrows():
+	if row["Name"][0].startswith("["):
+		continue
 	for key in csv_desired_cols:
 		transpose_assignment[key].append(row[key])
 

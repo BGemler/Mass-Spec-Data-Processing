@@ -5,8 +5,30 @@ from utils import check_fldr_read_sampleid
 sample_id = check_fldr_read_sampleid()
 
 volcano_data_csv = "input_files/" + sample_id + "_volcano.csv"
+part1_xls_loc = "output_files/" + sample_id + "_p1.xlsx"
 part1_csv_loc = "output_files/" + sample_id + "-transposed_p1.csv"
 part2_csv_loc = "output_files/" + sample_id + "_p2.csv"
+
+
+# load part 1 xls metadata associated with each compound
+xls = pd.ExcelFile(part1_xls_loc)
+page_of_interest = pd.read_excel(xls, "Compounds")
+desired_columns = ["Formula", "Annot. DeltaMass [ppm]", \
+											"Calc. MW", "m/z", "RT [min]", "Area (Max.)", \
+											"MS2"]
+
+annotation_data = {}
+for index, row in page_of_interest.iterrows():
+	# skip over rows with nothing in the Name column
+	name = row["Name"]
+	if str(name) == "nan":
+		continue
+
+	if name not in annotation_data:
+		annotation_data[name] = []
+	for key in desired_columns:
+		value = row[key]
+		annotation_data[name].append(value)
 
 # Load lookup of each name to bio group
 name_signal_lookup, ordered_groups = {}, []
@@ -58,9 +80,7 @@ with open(part2_csv_loc, "w") as f:
 
 	volcano_index_labels = [
 		[0, "FC"], \
-		[1, "Log 2 FC"], \
 		[2, "Raw PValue"], \
-		[3, "Negative Log10 PValue"]
 	]
 
 	# write out the volcano plot data
@@ -71,6 +91,17 @@ with open(part2_csv_loc, "w") as f:
 			volc_data_row.append(volc_data[volc_index])
 
 		out.writerow(volc_data_row)
+
+	# write out metadata
+	for i in range(len(desired_columns)):
+		key = desired_columns[i]
+
+		metadata_out_row = [key]
+		for n in names_in_volc:
+			metadata = annotation_data[n]
+			metadata_value = metadata[i]
+			metadata_out_row.append(metadata_value)
+		out.writerow(metadata_out_row)
 
 	# write out name-group signal data
 	for i in range(len(ordered_groups)):
